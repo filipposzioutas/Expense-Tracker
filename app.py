@@ -5,15 +5,9 @@ from datetime import date
 
 CSV_FILE = "expenses.csv"
 
-# -----------------------------
-# Sidebar for navigation
-# -----------------------------
-st.sidebar.title("Menu")
-page = st.sidebar.radio("Choose page", ["Add Expense", "View Summary"])
-
-# -----------------------------
-# Function to save expenses
-# -----------------------------
+st.sidebar.title("Μενού")
+page = st.sidebar.radio(
+    "Επιλέξτε σελίδα", ["Προσθήκη Εξόδου", "Προβολή Συνόλων"])
 
 
 def save_expense(date, amount, category, description):
@@ -22,56 +16,45 @@ def save_expense(date, amount, category, description):
         writer.writerow([date, amount, category, description])
 
 
-# -----------------------------
-# Page 1: Add Expense
-# -----------------------------
-if page == "Add Expense":
-    st.title("💸 Expense Tracker App")
-    st.write("Track your income and daily expenses")
+if page == "Προσθήκη Εξόδου":
+    st.title("💸 Σωστή Οικονομία")
+    st.write("Παρακολουθήστε το εισόδημά σας και τα καθημερινά έξοδα")
 
-    # Income
     income = st.number_input(
-        "Enter your monthly income (€)", min_value=0, step=50)
+        "Εισάγετε το μηνιαίο εισόδημά σας (€)", min_value=0, step=50)
 
-    # Date picker
-    selected_date = st.date_input("Select date", value=date.today())
+    selected_date = st.date_input("Επιλέξτε ημερομηνία", value=date.today())
 
-    # Expense inputs
-    st.subheader("Add a new expense")
-    amount = st.number_input("Expense amount (€)", min_value=0, step=1)
+    st.subheader("Προσθέστε ένα νέο έξοδο")
+    amount = st.number_input("Ποσό εξόδου (€)", min_value=0, step=1)
     category = st.selectbox(
-        "Category", ["Food", "Transport", "Rent", "Entertainment", "Other"])
-    description = st.text_input("Description (optional)")
+        "Κατηγορία", ["Φαγητό", "Μετακίνηση", "Ενοίκιο", "Διασκέδαση", "Άλλο"])
+    description = st.text_input("Περιγραφή (προαιρετικά)")
 
-    # Button to save expense
-    if st.button("Add expense"):
+    if st.button("Προσθήκη εξόδου"):
         save_expense(selected_date, amount, category, description)
-        st.success("✅ Expense saved!")
+        st.success("✅ Η έξοδος αποθηκεύτηκε!")
 
-# -----------------------------
-# Page 2: View Summary
-# -----------------------------
 else:
-    st.title("📊 Expense Summary")
+    st.title("📊 Συνολικά Έξοδα")
 
     try:
         df = pd.read_csv(CSV_FILE, names=[
-                         "Date", "Amount", "Category", "Description"])
+                         "Ημερομηνία", "Ποσό", "Κατηγορία", "Περιγραφή"])
         st.dataframe(df)
 
-        # Total expenses & remaining budget
-        total_expenses = df["Amount"].sum()
-        # Ask user for monthly income to calculate remaining
-        income = st.number_input(
-            "Enter your monthly income (€)", min_value=0, step=50)
-        remaining = income - total_expenses
-        st.write(f"💰 Total expenses: €{total_expenses}")
-        st.write(f"🟢 Remaining budget: €{remaining}")
+        total_expenses = df["Ποσό"].sum()
 
-        # Category pie chart
-        st.subheader("🍕 Expenses by Category")
-        category_summary = df.groupby("Category")["Amount"].sum()
+        income = st.number_input(
+            "Εισάγετε το μηνιαίο εισόδημά σας (€)", min_value=0, step=50)
+        remaining = income - total_expenses
+        st.write(f"💰 Συνολικά έξοδα: €{total_expenses}")
+        st.write(f"🟢 Υπόλοιπο προϋπολογισμού: €{remaining}")
+
+        st.subheader("🍕 Έξοδα ανά Κατηγορία")
+        category_summary = df.groupby("Κατηγορία")["Ποσό"].sum()
         st.pyplot(category_summary.plot.pie(autopct="%1.1f%%").figure)
 
     except FileNotFoundError:
-        st.write("No expenses yet. Add some in the 'Add Expense' page!")
+        st.write(
+            "Δεν υπάρχουν έξοδα ακόμα. Προσθέστε κάποια στη σελίδα 'Προσθήκη Εξόδου'!")
