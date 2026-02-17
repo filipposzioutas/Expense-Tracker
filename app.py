@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import csv
 from datetime import date
+import matplotlib.pyplot as plt
+
 
 CSV_FILE = "expenses.csv"
 
@@ -58,3 +60,4 @@ else:
     except FileNotFoundError:
         st.write(
             "Δεν υπάρχουν έξοδα ακόμα. Προσθέστε κάποια στη σελίδα 'Προσθήκη Εξόδου'!")
+
