@@ -15,7 +15,6 @@ page = st.sidebar.radio(
 
 # ---------------- Helper Functions ----------------
 def init_csv():
-    """Δημιουργεί το CSV με headers αν δεν υπάρχει"""
     if not os.path.exists(CSV_FILE):
         with open(CSV_FILE, "w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file)
@@ -33,18 +32,13 @@ if page == "Προσθήκη Εξόδου":
     st.title("💸 Σωστή Οικονομία")
     st.write("Παρακολουθήστε το εισόδημά σας και τα καθημερινά έξοδα")
 
-    income = st.number_input(
-        "Εισάγετε το μηνιαίο εισόδημά σας (€)",
-        min_value=0,
-        step=50
-    )
+    st.subheader("➕ Προσθήκη νέου εξόδου")
 
     selected_date = st.date_input(
         "Επιλέξτε ημερομηνία",
         value=date.today()
     )
 
-    st.subheader("➕ Προσθήκη νέου εξόδου")
     amount = st.number_input("Ποσό εξόδου (€)", min_value=0, step=1)
     category = st.selectbox(
         "Κατηγορία",
@@ -64,11 +58,19 @@ else:
     st.title("📊 Συνολικά Έξοδα")
 
     try:
-        df = pd.read_csv(CSV_FILE)
+        # ⬇️ ΔΙΑΒΑΖΟΥΜΕ ΧΩΡΙΣ HEADERS
+        df = pd.read_csv(
+            CSV_FILE,
+            header=0,
+            names=["Ημερομηνία", "Ποσό", "Κατηγορία", "Περιγραφή"]
+        )
 
         if df.empty:
             st.info("Δεν υπάρχουν έξοδα ακόμα.")
             st.stop()
+
+        # ⬇️ ΒΕΒΑΙΩΝΟΜΑΣΤΕ ΟΤΙ ΤΟ ΠΟΣΟ ΕΙΝΑΙ ΑΡΙΘΜΟΣ
+        df["Ποσό"] = pd.to_numeric(df["Ποσό"], errors="coerce").fillna(0)
 
         st.dataframe(df, use_container_width=True)
 
