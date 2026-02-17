@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import csv
-from datetime import date
 import os
 import uuid
+from datetime import date
 import matplotlib.pyplot as plt
 
 DATA_DIR = "data"
@@ -12,18 +12,29 @@ os.makedirs(DATA_DIR, exist_ok=True)
 if "user_id" not in st.session_state:
     st.session_state.user_id = str(uuid.uuid4())
 
-EXPENSES_CSV = os.path.join(DATA_DIR, f"expenses_{st.session_state.user_id}.csv")
-INCOME_FILE = os.path.join(DATA_DIR, f"income_{st.session_state.user_id}.txt")
+EXPENSES_FILE = os.path.join(DATA_DIR, "expenses_" + st.session_state.user_id + ".csv")
+INCOME_FILE = os.path.join(DATA_DIR, "income_" + st.session_state.user_id + ".txt")
 
-st.sidebar.title("Μενού")
-page = st.sidebar.radio("Επιλέξτε σελίδα", ["Προσθήκη Εξόδου", "Προβολή Συνόλων"])
+st.sidebar.title("Menu")
+page = st.sidebar.radio("Select page", ["Add Expense", "View Summary"])
 
 
 def init_expenses():
-    if not os.path.exists(EXPENSES_CSV):
-        with open(EXPENSES_CSV, "w", newline="", encoding="utf-8") as f:
+    if not os.path.exists(EXPENSES_FILE):
+        with open(EXPENSES_FILE, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["Ημερομηνία", "Ποσό", "Κατηγορία", "Περιγραφή"])
+            writer.writerow(["date", "amount", "category", "description"])
+
+
+def save_expense(d, a, c, desc):
+    with open(EXPENSES_FILE, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([d, a, c, desc])
+
+
+def save_income(value):
+    with open(INCOME_FILE, "w", encoding="utf-8") as f:
+        f.write(str(value))
 
 
 def load_income():
@@ -33,36 +44,59 @@ def load_income():
     return None
 
 
-def save_income(amount):
-    with open(INCOME_FILE, "w", encoding="utf-8") as f:
-        f.write(str(amount))
-
-
-def save_expense(exp_date, amount, category, description):
-    with open(EXPENSES_CSV, "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([exp_date, amount, category, description])
-
-
 init_expenses()
 
-if page == "Προσθήκη Εξόδου":
-    st.title("💸 Σωστή Οικονομία")
+if page == "Add Expense":
+    st.title("Expense Tracker")
 
-    st.subheader("💰 Μηνιαίο εισόδημα")
-    current_income = load_income()
+    income = load_income()
+    if income is None:
+        income = 0
 
-    income = st.number_input(
-        "Εισάγετε το μηνιαίο εισόδημά σας (€)",
-        min_value=0,
-        step=50,
-        value=int(current_income) if current_income is not None else 0
-    )
-
-    if st.button("💾 Αποθήκευση εισοδήματος"):
-        save_income(income)
-        st.success("Το εισόδημα αποθηκεύτηκε")
+    income_input = st.number_input("Monthly income", min_value=0, step=50, value=int(income))
+    if st.button("Save income"):
+        save_income(income_input)
+        st.success("Income saved")
 
     st.divider()
 
-    st.subheader("
+    expense_date = st.date_input("Date", value=date.today())
+    amount = st.number_input("Amount", min_value=0, step=1)
+    category = st.selectbox("Category", ["Food", "Transport", "Rent", "Fun", "Other"])
+    description = st.text_input("Description")
+
+    if st.button("Add expense"):
+        if amount > 0:
+            save_expense(expense_date, amount, category, description)
+            st.success("Expense added")
+
+else:
+    st.title("Summary")
+
+    income = load_income()
+    if income is None:
+        st.warning("Please set your income first")
+        st.stop()
+
+    df = pd.read_csv(EXPENSES_FILE)
+    if df.empty:
+        st.info("No expenses yet")
+        st.stop()
+
+    df["amount"] = pd.to_numeric(df["amount"], errors="coerce").fillna(0)
+
+    st.dataframe(df)
+
+    total = df["amount"].sum()
+    remaining = income - total
+
+    st.write("Income:", income)
+    st.write("Total expenses:", total)
+    st.write("Remaining:", remaining)
+
+    summary = df.groupby("category")["amount"].sum()
+
+    fig, ax = plt.subplots()
+    ax.pie(summary, labels=summary.index, autopct="%1.1f%%")
+    ax.axis("equal")
+    st.pyplot(fig)
