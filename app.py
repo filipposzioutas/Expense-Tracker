@@ -25,4 +25,30 @@ page = st.sidebar.radio(
 # ---------------- Helper Functions ----------------
 def init_expenses():
     if not os.path.exists(EXPENSES_CSV):
-        with open(EXPENSES_CSV, "w", newline="", enco_
+        with open(EXPENSES_CSV, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Ημερομηνία", "Ποσό", "Κατηγορία", "Περιγραφή"])
+
+def load_income():
+    if os.path.exists(INCOME_FILE):
+        with open(INCOME_FILE, "r", encoding="utf-8") as f:
+            return float(f.read())
+    return None
+
+def save_income(amount):
+    with open(INCOME_FILE, "w", encoding="utf-8") as f:
+        f.write(str(amount))
+
+def save_expense(exp_date, amount, category, description):
+    with open(EXPENSES_CSV, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([exp_date, amount, category, description])
+
+init_expenses()
+
+# ---------------- Pages ----------------
+if page == "Προσθήκη Εξόδου":
+    st.title("💸 Σωστή Οικονομία")
+
+    # ---------- Income ----------
+    st.subheader("💰 Μηνιαίο
