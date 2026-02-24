@@ -70,7 +70,7 @@ if page == "Προσθήκη Έξοδου":
     if st.button("Προσθήκη Έξοδου"):
         if amount > 0:
             save_expense(expense_date, amount, category, description)
-            st.success("Expense added")
+            st.success("Αποθηκεύτηκε")
 
 else:
     st.title("Σύνολο")
@@ -102,6 +102,7 @@ else:
     ax.pie(summary, labels=summary.index, autopct="%1.1f%%")
     ax.axis("equal")
     st.pyplot(fig)
+
 
 
 
