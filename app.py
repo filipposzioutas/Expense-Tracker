@@ -15,8 +15,8 @@ if "user_id" not in st.session_state:
 EXPENSES_FILE = os.path.join(DATA_DIR, "expenses_" + st.session_state.user_id + ".csv")
 INCOME_FILE = os.path.join(DATA_DIR, "income_" + st.session_state.user_id + ".txt")
 
-st.sidebar.title("Menu")
-page = st.sidebar.radio("Select page", ["Add Expense", "View Summary"])
+st.sidebar.title("Μενού")
+page = st.sidebar.radio("Επιλογή Σελίδας", ["Προσθήκη Έξοδου", "Σύνολο"])
 
 
 def init_expenses():
@@ -46,7 +46,7 @@ def load_income():
 
 init_expenses()
 
-if page == "Add Expense":
+if page == "Προσθήκη Έξοδου":
     st.title("Expense Tracker")
 
     income = load_income()
@@ -60,27 +60,27 @@ if page == "Add Expense":
 
     st.divider()
 
-    expense_date = st.date_input("Date", value=date.today())
-    amount = st.number_input("Amount", min_value=0, step=1)
-    category = st.selectbox("Category", ["Food", "Transport", "Rent", "Fun", "Other"])
-    description = st.text_input("Description")
+    expense_date = st.date_input("Ημερομηνία", value=date.today())
+    amount = st.number_input("Ποσό", min_value=0, step=1)
+    category = st.selectbox( "Κατηγορία", ["Φαγητό", "Μετακίνηση", "Ενοίκιο", "Διασκέδαση", "Άλλο"])
+    description = st.text_input("Περιγραφή")
 
-    if st.button("Add expense"):
+    if st.button("Προσθήκη Έξοδου"):
         if amount > 0:
             save_expense(expense_date, amount, category, description)
             st.success("Expense added")
 
 else:
-    st.title("Summary")
+    st.title("Σύνολο")
 
     income = load_income()
     if income is None:
-        st.warning("Please set your income first")
+        st.warning("Παρακαλώ εισάγετε το εισόδημα σας")
         st.stop()
 
     df = pd.read_csv(EXPENSES_FILE)
     if df.empty:
-        st.info("No expenses yet")
+        st.info("Δεν έχετε έξοδα")
         st.stop()
 
     df["amount"] = pd.to_numeric(df["amount"], errors="coerce").fillna(0)
@@ -90,9 +90,9 @@ else:
     total = df["amount"].sum()
     remaining = income - total
 
-    st.write("Income:", income)
-    st.write("Total expenses:", total)
-    st.write("Remaining:", remaining)
+    st.write(f"💵 Εισόδημα: {income}")
+    st.write(f"💸 Σύνολο εξόδων: {total}")
+    st.write(f"💰 Υπόλοιπο: {remaining}")
 
     summary = df.groupby("category")["amount"].sum()
 
@@ -100,3 +100,4 @@ else:
     ax.pie(summary, labels=summary.index, autopct="%1.1f%%")
     ax.axis("equal")
     st.pyplot(fig)
+
