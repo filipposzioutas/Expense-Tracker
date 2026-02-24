@@ -49,16 +49,16 @@ def load_income():
 init_expenses()
 
 if page == "Προσθήκη Έξοδου":
-    st.title("Expense Tracker")
+    st.title("Σωστή Οικονομία💸")
 
     income = load_income()
     if income is None:
         income = 0
 
-    income_input = st.number_input("Monthly income", min_value=0, step=50, value=int(income))
-    if st.button("Save income"):
+    income_input = st.number_input("Μηνιαίο Εισόδημα", min_value=0, step=50, value=int(income))
+    if st.button("Αποθήκευση"):
         save_income(income_input)
-        st.success("Income saved")
+        st.success("Αποθηκεύτηκε")
 
     st.divider()
 
@@ -102,5 +102,6 @@ else:
     ax.pie(summary, labels=summary.index, autopct="%1.1f%%")
     ax.axis("equal")
     st.pyplot(fig)
+
 
 
